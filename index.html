@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VaultGuard — Secure Client-Side Password Manager</title>
+    <meta name="description" content="A secure client-side password manager where your passwords are encrypted locally before being stored.">
+    <link rel="stylesheet" href="styles.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <!-- ================================================== -->
+    <!-- PAGE 1: VAULT LOCK SCREEN                          -->
+    <!-- ================================================== -->
+    <div id="lockScreen" class="lock-screen-container">
+        <div class="glass-card lock-card">
+            <div class="brand-header">
+                <div class="brand-icon">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                        <rect x="9" y="11" width="6" height="5" rx="1"/>
+                        <path d="M10 11V9a2 2 0 1 1 4 0v2"/>
+                    </svg>
+                </div>
+                <h1 class="brand-title">VaultGuard</h1>
+                <p class="brand-tagline">Your passwords. Your vault. Your control.</p>
+            </div>
+
+            <!-- UNLOCK FORM -->
+            <form id="unlockForm" class="lock-form-container">
+                <h2 id="lockHeading" class="lock-heading">Unlock Vault</h2>
+                <p id="lockSubheading" class="lock-subheading">Your credentials are encrypted locally on this device.</p>
+
+                <div class="input-group">
+                    <label for="masterPassword" class="input-label">Master Password</label>
+                    <div class="input-wrapper">
+                        <input type="password" id="masterPassword" class="input-field" placeholder="Enter master password" required autocomplete="current-password">
+                        <button type="button" id="toggleLockPassword" class="input-toggle-btn" aria-label="Toggle password visibility">
+                            <svg class="eye-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="confirmPasswordGroup" class="input-group hidden">
+                    <label for="confirmMasterPassword" class="input-label">Confirm Master Password</label>
+                    <div class="input-wrapper">
+                        <input type="password" id="confirmMasterPassword" class="input-field" placeholder="Confirm master password" autocomplete="new-password">
+                    </div>
+                </div>
+
+                <button type="submit" id="unlockBtn" class="btn btn-primary" style="width: 100%;">
+                    <span id="unlockBtnText">Unlock Vault</span>
+                    <span id="unlockSpinner" class="spinner hidden"></span>
+                </button>
+
+                <div class="security-info-box">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                    <span>Your master password never leaves this device.</span>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <!-- ================================================== -->
+    <!-- PAGE 2: MAIN DASHBOARD SCREEN                      -->
+    <!-- ================================================== -->
+    <div id="dashboardScreen" class="dashboard-layout hidden">
+
+        <!-- SIDEBAR -->
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <div class="sidebar-brand-icon">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                </div>
+                <span class="sidebar-brand-title">VaultGuard</span>
+            </div>
+
+            <nav class="nav-menu">
+                <button class="nav-item active" data-view="all">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                    <span>All Passwords</span>
+                    <span id="allCountBadge" class="nav-badge">0</span>
+                </button>
+                <button class="nav-item" data-view="favorites">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                    <span>Favorites</span>
+                    <span id="favCountBadge" class="nav-badge">0</span>
+                </button>
+                <button class="nav-item" data-view="recent">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    <span>Recently Added</span>
+                </button>
+                <button class="nav-item" id="navGeneratorBtn">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
+                    <span>Generator</span>
+                </button>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="security-status-card">
+                    <div class="status-dot"></div>
+                    <div class="status-text-container">
+                        <span class="status-title">Vault Unlocked</span>
+                        <span class="status-desc">AES-256 Encrypted Session</span>
+                    </div>
+                </div>
+
+                <button id="lockVaultBtn" class="btn btn-secondary" style="width: 100%;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                    <span>Lock Vault</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- MAIN DASHBOARD CONTENT -->
+        <main class="main-content">
+            <header class="dashboard-header">
+                <div>
+                    <h1 class="welcome-title">Good morning</h1>
+                    <p class="welcome-subtitle">Your digital vault is secure.</p>
+                </div>
+
+                <div class="header-actions">
+                    <div class="search-box">
+                        <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                        <input type="text" id="searchInput" class="search-input" placeholder="Search passwords (title/username)...">
+                    </div>
+
+                    <button id="openAddModalBtn" class="btn btn-primary">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        <span>Add Password</span>
+                    </button>
+                </div>
+            </header>
+
+            <!-- STATS CARDS -->
+            <div class="stats-grid">
+                <div class="glass-card stat-card">
+                    <div class="stat-info">
+                        <span id="statTotalCount" class="stat-value">0</span>
+                        <span class="stat-label">Total Passwords</span>
+                    </div>
+                    <div class="stat-icon green">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                    </div>
+                </div>
+
+                <div class="glass-card stat-card">
+                    <div class="stat-info">
+                        <span id="statFavoritesCount" class="stat-value">0</span>
+                        <span class="stat-label">Favorites</span>
+                    </div>
+                    <div class="stat-icon amber">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                    </div>
+                </div>
+
+                <div class="glass-card stat-card">
+                    <div class="stat-info">
+                        <span id="statRecentCount" class="stat-value">0</span>
+                        <span class="stat-label">Added this week</span>
+                    </div>
+                    <div class="stat-icon blue">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PASSWORDS SECTION -->
+            <section class="passwords-section">
+                <div class="section-header">
+                    <h2 id="viewSectionTitle" class="section-title">All Vault Entries</h2>
+                </div>
+
+                <div id="passwordsGrid" class="passwords-grid">
+                    <!-- Cards or Empty state dynamically inserted here -->
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- MOBILE NAVIGATION -->
+    <div class="mobile-nav">
+        <button class="mobile-nav-item active" data-view="all">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+            <span>Vault</span>
+        </button>
+        <button class="mobile-nav-item" id="mobileAddBtn">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            <span>Add</span>
+        </button>
+        <button class="mobile-nav-item" id="mobileGenBtn">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
+            <span>Generate</span>
+        </button>
+        <button class="mobile-nav-item" id="mobileLockBtn">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <span>Lock</span>
+        </button>
+    </div>
+
+    <!-- ================================================== -->
+    <!-- MODAL 1: ADD / EDIT PASSWORD                       -->
+    <!-- ================================================== -->
+    <div id="passwordModal" class="modal-overlay" role="dialog" aria-modal="true">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle" class="modal-title">Add Password</h3>
+                <button type="button" class="modal-close-btn closeModalBtn" aria-label="Close modal">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+            </div>
+            <form id="passwordForm">
+                <input type="hidden" id="editEntryId" value="">
+                <div class="modal-body">
+                    <div class="input-group">
+                        <label for="entryTitle" class="input-label">Website / Service</label>
+                        <input type="text" id="entryTitle" class="input-field" placeholder="e.g. Google, GitHub, Netflix" required>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="entryUsername" class="input-label">Username / Email</label>
+                        <input type="text" id="entryUsername" class="input-field" placeholder="user@example.com" required>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="entryPassword" class="input-label">Password</label>
+                        <div class="input-wrapper">
+                            <input type="password" id="entryPassword" class="input-field" placeholder="Enter password or generate" required>
+                            <button type="button" id="toggleEntryPasswordBtn" class="input-toggle-btn">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                            </button>
+                        </div>
+                        <button type="button" id="inlineGenerateBtn" class="btn btn-secondary" style="margin-top: 8px; font-size: 0.825rem; padding: 6px 12px;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
+                            <span>Generate Strong Password</span>
+                        </button>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="entryCategory" class="input-label">Category</label>
+                        <select id="entryCategory" class="input-field">
+                            <option value="General">General</option>
+                            <option value="Social">Social Media</option>
+                            <option value="Work">Work & Business</option>
+                            <option value="Finance">Finance & Banking</option>
+                            <option value="Personal">Personal</option>
+                        </select>
+                    </div>
+
+                    <div class="checkbox-label" style="margin-top: 10px;">
+                        <input type="checkbox" id="entryFavorite">
+                        <span>Mark as Favorite</span>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary closeModalBtn">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Password</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <!-- ================================================== -->
+    <!-- MODAL 2: PASSWORD GENERATOR                        -->
+    <!-- ================================================== -->
+    <div id="generatorModal" class="modal-overlay" role="dialog" aria-modal="true">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Password Generator</h3>
+                <button type="button" class="modal-close-btn closeModalBtn" aria-label="Close modal">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="generator-container">
+                    <div class="generated-password-box">
+                        <span id="genDisplay" class="generated-output">Select options</span>
+                        <button type="button" id="copyGenPasswordBtn" class="btn-icon" title="Copy to clipboard">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                        </button>
+                    </div>
+
+                    <div class="strength-meter">
+                        <div id="genStrengthBar" class="strength-bar"></div>
+                    </div>
+
+                    <div class="slider-container">
+                        <div class="slider-header">
+                            <span>Password Length</span>
+                            <span id="lengthValue">16</span>
+                        </div>
+                        <input type="range" id="lengthSlider" class="range-slider" min="8" max="64" value="16">
+                    </div>
+
+                    <div class="checkbox-grid">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="genUppercase" checked>
+                            <span>Uppercase (A-Z)</span>
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="genLowercase" checked>
+                            <span>Lowercase (a-z)</span>
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="genNumbers" checked>
+                            <span>Numbers (0-9)</span>
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="genSymbols" checked>
+                            <span>Symbols (!@#$)</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="generateNewBtn" class="btn btn-secondary">Generate</button>
+                <button type="button" id="useGeneratedPasswordBtn" class="btn btn-primary">Use Password</button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ================================================== -->
+    <!-- MODAL 3: DELETE CONFIRMATION                       -->
+    <!-- ================================================== -->
+    <div id="deleteModal" class="modal-overlay" role="dialog" aria-modal="true">
+        <div class="modal-content" style="max-width: 400px;">
+            <div class="modal-header">
+                <h3 class="modal-title">Delete this password?</h3>
+                <button type="button" class="modal-close-btn closeModalBtn" aria-label="Close modal">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p style="color: var(--text-muted); font-size: 0.95rem;">This action cannot be undone. Are you sure you want to permanently delete this secret from your encrypted vault?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary closeModalBtn">Cancel</button>
+                <button type="button" id="confirmDeleteBtn" class="btn btn-danger">Delete</button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- TOAST CONTAINER -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <!-- SCRIPTS -->
+    <script src="backend/crypto.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
